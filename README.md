@@ -3,9 +3,12 @@
 Tento projekt demonstruje kompletní propojení konverzačního agenta vytvořeného v **Microsoft Copilot Studiu** s vlastní backendovou logikou hostovanou v **Azure Function** (Python). Komunikace je orchestrována pomocí **Power Automate** a standardizována přes **Vlastní konektor (Custom Connector)**.
 
 ---
-## Architektura Řešení
+## Architektura a Průběh Konverzace
 
-Celé řešení je postaveno na čtyřech klíčových komponentách, které spolu komunikují v následujícím pořadí:
+Celé řešení je postaveno na čtyřech klíčových komponentách, které spolu komunikují a provádějí uživatele celým procesem dotazu a odpovědi.
+
+### Architektura
+Tok dat probíhá v následujícím pořadí:
 
 ```
 Uživatel
@@ -24,10 +27,26 @@ Uživatel
    |
    `----<----<----<----<----<----<----<----<---- (Odpověď se vrací stejnou cestou zpět)
 ```
+### Příklad Konverzace s Vysvětlením
+
+Zde je ukázka, jak tato architektura funguje v praxi a co jednotlivé kroky znamenají:
+
+**Vy:** `mám dotaz`
+> **Vysvětlení:** Uživatel použije spouštěcí frázi. Tím dává botovi signál, že chce aktivovat speciální schopnost hledání v externí databázi, nikoliv vést běžnou konverzaci.
+
+**Bot:** `Dobře, na co přesně se chcete zeptat?`
+> **Vysvětlení:** Copilot spustil správné Téma. Nyní pokládá upřesňující otázku, aby získal konkrétní dotaz, který následně pošle ke zpracování.
+
+**Vy:** `Jaké jsou poplatky za vedení účtu?`
+> **Vysvětlení:** Uživatel poskytuje finální dotaz. Tato hodnota se uloží do proměnné a bezpečně se předá přes Power Automate a konektor až do Azure funkce.
+
+**Bot:** `Testovací odpověď z Azure Function pro dotaz: 'Jaké jsou poplatky za vedení účtu?'`
+> **Vysvětlení:** Toto je finální odpověď, kterou bot obdržel přímo z našeho interního systému (Azure funkce). Dokazuje to, že celý řetězec propojení od začátku do konce úspěšně funguje.
+
 1.  **Copilot Studio (Frontend):** Stará se o vedení konverzace s uživatelem, rozpoznání záměru (pomocí frází nebo popisu) a volání Power Automate toku.
 2.  **Power Automate (Orchestrátor):** Slouží jako "lepidlo". Přijímá data z Copilota, volá konektor, zpracovává odpověď (pomocí klíčového kroku **Parsovat JSON**) a vrací výsledek zpět.
-3.  **Vlastní konektor (Adaptér):** Standardizovaný "obal" kolem naší Azure funkce, který umožňuje Power Platformě snadno komunikovat s naším API pomocí OpenAPI specifikace.
-4.  **Azure Function (Backend):** "Mozek" operace. V tomto projektu máme dvě funkce:
+3.  **Vlastní konektor (Adaptér):** Standardizovaný "obal" kolem Azure funkce, který umožňuje Power Platformě snadno komunikovat s API pomocí OpenAPI specifikace.
+4.  **Azure Function (Backend):** "Mozek" operace. V tomto projektu jsou dvě funkce:
     * `faq`: Hlavní funkce, která přijímá dotaz a vrací odpověď.
     * `swagger_get`: Pomocná funkce, která servíruje ručně vytvořený `swagger.json` soubor.
 
@@ -52,7 +71,7 @@ Uživatel
 |-- .gitignore
 |-- host.json
 |-- requirements.txt     # Závislosti pro Python (jen azure-functions)
-`-- swagger.json         # Ručně vytvořená OpenAPI specifikace pro naši funkci
+`-- swagger.json         # Ručně vytvořená OpenAPI specifikace 
 ```
 
 ---
@@ -78,12 +97,12 @@ Uživatel
     * Přidejte uzel "Odeslat zprávu" pro zobrazení finální odpovědi.
 
 ---
-## Klíčové poznatky (Lessons Learned)
+## Klíčové poznatky 
 * **Problémy se závislostmi třetích stran:** Automatická generace OpenAPI specifikace pomocí knihovny `azure-functions-openapi` se ukázala jako nespolehlivá kvůli nekompatibilitě se současným prostředím Azure. Ruční vytvoření `swagger.json` je robustnější alternativou.
 * **Explicitní parsování v Power Automate:** Pro spolehlivé předání dat z konektoru zpět do Copilota je naprosto zásadní použít akci **"Parsovat JSON"**. Bez ní tok sice může skončit úspěšně, ale data se do Copilota nepředají ve správném formátu.
 * **Vývoj UI v Copilot Studiu:** Rozhraní se rychle mění. Je důležité rozumět rozdílu mezi klasickým spouštěčem na bázi **frází** a novým generativním přístupem na bázi **popisu** tématu.
 
 ---
-## 🚀 Odkaz na Bota
+## 🚀 GIF LIVE DEMO BOT
 
-[Zde vložte finální odkaz na nasazeného KBC FAQ bota]
+![Ukázka konverzace s KBC Botem](assets/demo.gif)
