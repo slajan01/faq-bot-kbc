@@ -31,16 +31,16 @@ User
 
 Here is a demonstration of how this architecture works in practice and what each step means:
 
-**You:** `I have a question`
+**You:** `mám dotaz`
 > **Explanation:** The user utilizes a trigger phrase. This signals to the bot that they want to activate the special capability of searching an external database, rather than conducting a general conversation.
 
-**Bot:** `Okay, what exactly do you want to ask?`
+**Bot:** `Dobře, na co přesně se chcete zeptat?`
 > **Explanation:** The Copilot has triggered the correct Topic. It is now asking a clarifying question to obtain the specific query, which it will then send for processing.
 
-**You:** `What are the fees for account maintenance?`
+**You:** `Jaké jsou poplatky za vedení účtu?`
 > **Explanation:** The user provides the final query. This value is saved to a variable and securely passed through Power Automate and the connector to the Azure Function.
 
-**Bot:** `Test response from Azure Function for the query: 'What are the fees for account maintenance?'`
+**Bot:** `Testovací odpověď z Azure Function pro dotaz: 'Jaké jsou poplatky za vedení účtu?'`
 > **Explanation:** This is the final response that the bot received directly from our internal system (the Azure Function). It proves that the entire connection chain works successfully from start to finish.
 
 1.  **Copilot Studio (Frontend):** Manages the conversation with the user, recognizes intent (using phrases or a description), and calls the Power Automate flow.
